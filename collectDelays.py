@@ -44,7 +44,7 @@ def pull_stop_data(stopID: str, direction: str):
         key = "text.occup.jny.max." + str(raw)
         for n in departure['Notes']['Note']:
             if n['key'] == key:
-                print(n['value'])
+                #print(n['value'])
                 dictionary['occupancy'] = n['value']
         stopData.append(dictionary)
     return stopData
