@@ -20,6 +20,10 @@ def pull_stop_data(stopID: str, direction: str):
     with urllib.request.urlopen(source_url) as url:
         data: str = json.loads(url.read().decode())
 
+    # write to file
+    f = open("data/departureBoard.json", "w")
+    f.write(json.dumps(data, indent = 4, sort_keys=True))
+    f.close()
     #print(json.dumps(data, indent = 4, sort_keys=True))
     
     stopData = []
@@ -34,8 +38,14 @@ def pull_stop_data(stopID: str, direction: str):
             dictionary['rtDate'] = departure['rtDate']
         if 'rtTime' in departure:               # time of delayed arrival
             dictionary['rtTime'] = departure['rtTime']
-        dictionary['product'] = departure['Product'][0]['line']
-        dictionary['occupancy'] = departure['Occupancy'][0]['raw']  # Belegung
+        dictionary['name'] = departure['name']
+        # Belegung
+        raw = departure['Occupancy'][0]['raw']
+        key = "text.occup.jny.max." + str(raw)
+        for n in departure['Notes']['Note']:
+            if n['key'] == key:
+                print(n['value'])
+                dictionary['occupancy'] = n['value']
         stopData.append(dictionary)
     return stopData
 
@@ -74,6 +84,3 @@ query = {  }
 doc = collection.find(query)
 for d in doc:
   print(d)
-
-
-
