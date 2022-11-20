@@ -5,6 +5,7 @@
 import settings
 import urllib.request
 import json
+import os
 from pymongo import MongoClient
 
 client = MongoClient(settings.CONNECTION_STRING) # get MongoDB Client
@@ -21,7 +22,9 @@ def pull_stop_data(stopID: str, direction: str):
         data: str = json.loads(url.read().decode())
 
     # write to file
-    f = open("data/departureBoard.json", "w")
+    dir = os.path.dirname(__file__)
+    filename = os.path.join(dir, "data/departureBoard.json")
+    f = open(filename, "w")
     f.write(json.dumps(data, indent = 4, sort_keys=True))
     f.close()
     #print(json.dumps(data, indent = 4, sort_keys=True))
@@ -34,18 +37,19 @@ def pull_stop_data(stopID: str, direction: str):
         dictionary['direction'] = departure['direction']
         dictionary['date'] = departure['date']
         dictionary['time'] = departure['time']
+        dictionary['name'] = departure['name']
         if 'rtDate' in departure:               # date of delayed arrival
             dictionary['rtDate'] = departure['rtDate']
         if 'rtTime' in departure:               # time of delayed arrival
             dictionary['rtTime'] = departure['rtTime']
-        dictionary['name'] = departure['name']
-        # Belegung
-        raw = departure['Occupancy'][0]['raw']
-        key = "text.occup.jny.max." + str(raw)
-        for n in departure['Notes']['Note']:
-            if n['key'] == key:
-                #print(n['value'])
-                dictionary['occupancy'] = n['value']
+        
+        if 'Occupancy' in departure:  # if info 'Belegung' available 
+            raw = departure['Occupancy'][0]['raw']
+            key = "text.occup.jny.max." + str(raw)
+            for n in departure['Notes']['Note']:
+                if n['key'] == key:
+                    #print(n['value'])
+                    dictionary['occupancy'] = n['value']
         stopData.append(dictionary)
     return stopData
 
