@@ -7,6 +7,8 @@ import urllib.request
 import json
 import os
 from pymongo import MongoClient
+from datetime import datetime
+import csv
 
 client = MongoClient(settings.CONNECTION_STRING) # get MongoDB Client
 
@@ -84,7 +86,35 @@ for direction in settings.directions: # get some departure data per direction
             upsert = True
         )
 # print all data of collection
-query = {  }  
+query = {'date':{'$exists': True} }  
 doc = collection.find(query)
 for d in doc:
   print(d)
+
+# write to csv file
+f = open('data/delays.csv', 'w', newline='')
+writer = csv.writer(f)
+fields = ['datetime', 'delay', 'name', 'occupancy']
+writer.writerow(fields)
+
+query = { }  
+doc = collection.find(query,{'_id':False}) # exlude _id from result dict (save memory)
+for d in doc:
+    datetimePlanned = datetime.strptime(d['date']+d['time'],"%Y-%m-%d%H:%M:%S")
+    if 'rtDate' not in d:
+        d['rtDate'] = d['date']
+    if d['rtDate'] == None:
+        d['rtDate'] = d['date']
+    if d['rtTime'] == None:
+        d['rtTime'] = d['time']
+    if 'name' not in d:
+        d['name'] = d['product']
+    if 'occupancy' not in d:
+        d['occupancy'] = "-"
+    datetimeDelayed = datetime.strptime(d['rtDate']+d['rtTime'],"%Y-%m-%d%H:%M:%S")
+    delay = datetimeDelayed - datetimePlanned
+    print(datetimeDelayed.isoformat() + " - " + datetimePlanned.isoformat() + " = " + str(delay))
+    data = [datetimePlanned.isoformat(),str(delay), d['name'], d['occupancy']]
+    writer.writerow(data)
+
+f.close()
