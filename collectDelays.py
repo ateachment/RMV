@@ -92,7 +92,9 @@ for d in doc:
   print(d)
 
 # write to csv file
-f = open('data/delays.csv', 'w', newline='')
+dir = os.path.dirname(__file__)
+filename = os.path.join(dir, "data/delays.csv")
+f = open(filename, 'w', newline='')
 writer = csv.writer(f)
 fields = ['datetime', 'delay', 'name', 'occupancy']
 writer.writerow(fields)
