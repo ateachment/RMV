@@ -15,7 +15,7 @@ client = MongoClient(settings.CONNECTION_STRING) # get MongoDB Client
 db = client['RMV-Pull-Stop']                     # create mono db if not exists
 
 collection = db["GG-FFM"]                        # create collection if not exists
-#collection.drop()                               
+#collection.drop()
 
 # get pull-stop data from RMV API
 def pull_stop_data(stopID: str, direction: str): 
@@ -30,7 +30,7 @@ def pull_stop_data(stopID: str, direction: str):
     f.write(json.dumps(data, indent = 4, sort_keys=True))
     f.close()
     #print(json.dumps(data, indent = 4, sort_keys=True))
-    
+
     stopData = []
 
     for departure in data["Departure"]:         # collect some data
@@ -44,14 +44,14 @@ def pull_stop_data(stopID: str, direction: str):
             dictionary['rtDate'] = departure['rtDate']
         if 'rtTime' in departure:               # time of delayed arrival
             dictionary['rtTime'] = departure['rtTime']
-        
+
         if 'Occupancy' in departure:  # if info 'Belegung' available 
             raw = departure['Occupancy'][0]['raw']
             key = "text.occup.jny.max." + str(raw)
             for n in departure['Notes']['Note']:
                 if n['key'] == key:
                     #print(n['value'])
-                    dictionary['occupancy'] = n['value']
+                    dictionary['occupancy'] = n['value']        # Belegung
         stopData.append(dictionary)
     return stopData
 
