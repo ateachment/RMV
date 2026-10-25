@@ -33,7 +33,7 @@ def pull_stop_data(stopID: str, direction: str):
 
     stopData = []
 
-    for departure in data.get("Departure",[]):         # collect some data
+    for departure in data.get("Departure",[]):  # collect some data, if available
         dictionary = {}
         dictionary['stop'] = departure['stop']
         dictionary['direction'] = departure['direction']
